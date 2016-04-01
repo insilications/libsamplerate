@@ -4,7 +4,7 @@
 #
 Name     : libsamplerate
 Version  : 0.1.8
-Release  : 1
+Release  : 2
 URL      : http://www.mega-nerd.com/SRC/libsamplerate-0.1.8.tar.gz
 Source0  : http://www.mega-nerd.com/SRC/libsamplerate-0.1.8.tar.gz
 Summary  : An audio Sample Rate Conversion library
@@ -64,6 +64,13 @@ lib components for the libsamplerate package.
 %setup -q -n libsamplerate-0.1.8
 
 %build
+export AR=gcc-ar
+export RANLIB=gcc-ranlib
+export NM=gcc-nm
+export CFLAGS="$CFLAGS -flto -falign-functions=32 -fno-semantic-interposition -O3 "
+export FCFLAGS="$CFLAGS -flto -falign-functions=32 -fno-semantic-interposition -O3 "
+export FFLAGS="$CFLAGS -flto -falign-functions=32 -fno-semantic-interposition -O3 "
+export CXXFLAGS="$CXXFLAGS -flto -falign-functions=32 -fno-semantic-interposition -O3 "
 %configure --disable-static
 make V=1  %{?_smp_mflags}
 
