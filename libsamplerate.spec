@@ -4,7 +4,7 @@
 #
 Name     : libsamplerate
 Version  : 0.1.8
-Release  : 3
+Release  : 4
 URL      : http://www.mega-nerd.com/SRC/libsamplerate-0.1.8.tar.gz
 Source0  : http://www.mega-nerd.com/SRC/libsamplerate-0.1.8.tar.gz
 Summary  : An audio Sample Rate Conversion library
