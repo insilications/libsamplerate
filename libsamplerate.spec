@@ -4,7 +4,7 @@
 #
 Name     : libsamplerate
 Version  : 0.1.9
-Release  : 7
+Release  : 8
 URL      : http://www.mega-nerd.com/SRC/libsamplerate-0.1.9.tar.gz
 Source0  : http://www.mega-nerd.com/SRC/libsamplerate-0.1.9.tar.gz
 Summary  : An audio Sample Rate Conversion library
@@ -63,35 +63,52 @@ lib components for the libsamplerate package.
 
 %prep
 %setup -q -n libsamplerate-0.1.9
+pushd ..
+cp -a libsamplerate-0.1.9 buildavx2
+popd
 
 %build
+export http_proxy=http://127.0.0.1:9/
+export https_proxy=http://127.0.0.1:9/
+export no_proxy=localhost,127.0.0.1,0.0.0.0
 export LANG=C
-export AR=gcc-ar
-export RANLIB=gcc-ranlib
-export NM=gcc-nm
-export CFLAGS="$CFLAGS -falign-functions=32 -O3 -fno-semantic-interposition "
-export FCFLAGS="$CFLAGS -falign-functions=32 -O3 -fno-semantic-interposition "
-export FFLAGS="$CFLAGS -falign-functions=32 -O3 -fno-semantic-interposition "
-export CXXFLAGS="$CXXFLAGS -falign-functions=32 -O3 -fno-semantic-interposition "
+export SOURCE_DATE_EPOCH=1506264013
+export CFLAGS="$CFLAGS -O3 -falign-functions=32 -fno-math-errno -fno-semantic-interposition -fno-trapping-math "
+export FCFLAGS="$CFLAGS -O3 -falign-functions=32 -fno-math-errno -fno-semantic-interposition -fno-trapping-math "
+export FFLAGS="$CFLAGS -O3 -falign-functions=32 -fno-math-errno -fno-semantic-interposition -fno-trapping-math "
+export CXXFLAGS="$CXXFLAGS -O3 -falign-functions=32 -fno-math-errno -fno-semantic-interposition -fno-trapping-math "
 %configure --disable-static
 make V=1  %{?_smp_mflags}
 
+pushd ../buildavx2/
+export CFLAGS="$CFLAGS -m64 -march=haswell"
+export CXXFLAGS="$CXXFLAGS -m64 -march=haswell"
+export LDFLAGS="$LDFLAGS -m64 -march=haswell"
+%configure --disable-static    --libdir=/usr/lib64/haswell --bindir=/usr/bin/haswell
+make V=1  %{?_smp_mflags}
+popd
 %check
 export LANG=C
 export http_proxy=http://127.0.0.1:9/
 export https_proxy=http://127.0.0.1:9/
-export no_proxy=localhost
+export no_proxy=localhost,127.0.0.1,0.0.0.0
 make VERBOSE=1 V=1 %{?_smp_mflags} check
 
 %install
+export SOURCE_DATE_EPOCH=1506264013
 rm -rf %{buildroot}
+pushd ../buildavx2/
+%make_install
+popd
 %make_install
 
 %files
 %defattr(-,root,root,-)
+/usr/lib64/haswell/pkgconfig/samplerate.pc
 
 %files bin
 %defattr(-,root,root,-)
+/usr/bin/haswell/sndfile-resample
 /usr/bin/sndfile-resample
 
 %files data
@@ -115,9 +132,13 @@ rm -rf %{buildroot}
 %files dev
 %defattr(-,root,root,-)
 /usr/include/*.h
-/usr/lib64/*.so
-/usr/lib64/pkgconfig/*.pc
+/usr/lib64/haswell/libsamplerate.so
+/usr/lib64/libsamplerate.so
+/usr/lib64/pkgconfig/samplerate.pc
 
 %files lib
 %defattr(-,root,root,-)
-/usr/lib64/*.so.*
+/usr/lib64/haswell/libsamplerate.so.0
+/usr/lib64/haswell/libsamplerate.so.0.1.8
+/usr/lib64/libsamplerate.so.0
+/usr/lib64/libsamplerate.so.0.1.8
