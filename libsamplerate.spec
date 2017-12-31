@@ -4,7 +4,7 @@
 #
 Name     : libsamplerate
 Version  : 0.1.9
-Release  : 8
+Release  : 9
 URL      : http://www.mega-nerd.com/SRC/libsamplerate-0.1.9.tar.gz
 Source0  : http://www.mega-nerd.com/SRC/libsamplerate-0.1.9.tar.gz
 Summary  : An audio Sample Rate Conversion library
@@ -66,26 +66,36 @@ lib components for the libsamplerate package.
 pushd ..
 cp -a libsamplerate-0.1.9 buildavx2
 popd
+pushd ..
+cp -a libsamplerate-0.1.9 buildavx512
+popd
 
 %build
 export http_proxy=http://127.0.0.1:9/
 export https_proxy=http://127.0.0.1:9/
 export no_proxy=localhost,127.0.0.1,0.0.0.0
 export LANG=C
-export SOURCE_DATE_EPOCH=1506264013
+export SOURCE_DATE_EPOCH=1514732068
 export CFLAGS="$CFLAGS -O3 -falign-functions=32 -fno-math-errno -fno-semantic-interposition -fno-trapping-math "
 export FCFLAGS="$CFLAGS -O3 -falign-functions=32 -fno-math-errno -fno-semantic-interposition -fno-trapping-math "
 export FFLAGS="$CFLAGS -O3 -falign-functions=32 -fno-math-errno -fno-semantic-interposition -fno-trapping-math "
 export CXXFLAGS="$CXXFLAGS -O3 -falign-functions=32 -fno-math-errno -fno-semantic-interposition -fno-trapping-math "
 %configure --disable-static
-make V=1  %{?_smp_mflags}
+make  %{?_smp_mflags}
 
 pushd ../buildavx2/
 export CFLAGS="$CFLAGS -m64 -march=haswell"
 export CXXFLAGS="$CXXFLAGS -m64 -march=haswell"
 export LDFLAGS="$LDFLAGS -m64 -march=haswell"
 %configure --disable-static    --libdir=/usr/lib64/haswell --bindir=/usr/bin/haswell
-make V=1  %{?_smp_mflags}
+make  %{?_smp_mflags}
+popd
+pushd ../buildavx512/
+export CFLAGS="$CFLAGS -m64 -march=skylake-avx512"
+export CXXFLAGS="$CXXFLAGS -m64 -march=skylake-avx512"
+export LDFLAGS="$LDFLAGS -m64 -march=skylake-avx512"
+%configure --disable-static    --libdir=/usr/lib64/haswell/avx512_1 --bindir=/usr/bin/haswell/avx512_1
+make  %{?_smp_mflags}
 popd
 %check
 export LANG=C
@@ -95,19 +105,24 @@ export no_proxy=localhost,127.0.0.1,0.0.0.0
 make VERBOSE=1 V=1 %{?_smp_mflags} check
 
 %install
-export SOURCE_DATE_EPOCH=1506264013
+export SOURCE_DATE_EPOCH=1514732068
 rm -rf %{buildroot}
 pushd ../buildavx2/
+%make_install
+popd
+pushd ../buildavx512/
 %make_install
 popd
 %make_install
 
 %files
 %defattr(-,root,root,-)
+/usr/lib64/haswell/avx512_1/pkgconfig/samplerate.pc
 /usr/lib64/haswell/pkgconfig/samplerate.pc
 
 %files bin
 %defattr(-,root,root,-)
+/usr/bin/haswell/avx512_1/sndfile-resample
 /usr/bin/haswell/sndfile-resample
 /usr/bin/sndfile-resample
 
@@ -138,6 +153,9 @@ popd
 
 %files lib
 %defattr(-,root,root,-)
+/usr/lib64/haswell/avx512_1/libsamplerate.so
+/usr/lib64/haswell/avx512_1/libsamplerate.so.0
+/usr/lib64/haswell/avx512_1/libsamplerate.so.0.1.8
 /usr/lib64/haswell/libsamplerate.so.0
 /usr/lib64/haswell/libsamplerate.so.0.1.8
 /usr/lib64/libsamplerate.so.0
