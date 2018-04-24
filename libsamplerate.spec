@@ -4,7 +4,7 @@
 #
 Name     : libsamplerate
 Version  : 0.1.9
-Release  : 10
+Release  : 11
 URL      : http://www.mega-nerd.com/SRC/libsamplerate-0.1.9.tar.gz
 Source0  : http://www.mega-nerd.com/SRC/libsamplerate-0.1.9.tar.gz
 Summary  : An audio Sample Rate Conversion library
@@ -12,7 +12,7 @@ Group    : Development/Tools
 License  : BSD-2-Clause
 Requires: libsamplerate-bin
 Requires: libsamplerate-lib
-Requires: libsamplerate-data
+Requires: libsamplerate-doc
 BuildRequires : alsa-lib-dev
 BuildRequires : pkgconfig(fftw3)
 BuildRequires : pkgconfig(sndfile)
@@ -26,18 +26,9 @@ perfroming sample rate conversion of audio data.
 %package bin
 Summary: bin components for the libsamplerate package.
 Group: Binaries
-Requires: libsamplerate-data
 
 %description bin
 bin components for the libsamplerate package.
-
-
-%package data
-Summary: data components for the libsamplerate package.
-Group: Data
-
-%description data
-data components for the libsamplerate package.
 
 
 %package dev
@@ -45,17 +36,23 @@ Summary: dev components for the libsamplerate package.
 Group: Development
 Requires: libsamplerate-lib
 Requires: libsamplerate-bin
-Requires: libsamplerate-data
 Provides: libsamplerate-devel
 
 %description dev
 dev components for the libsamplerate package.
 
 
+%package doc
+Summary: doc components for the libsamplerate package.
+Group: Documentation
+
+%description doc
+doc components for the libsamplerate package.
+
+
 %package lib
 Summary: lib components for the libsamplerate package.
 Group: Libraries
-Requires: libsamplerate-data
 
 %description lib
 lib components for the libsamplerate package.
@@ -75,7 +72,7 @@ export http_proxy=http://127.0.0.1:9/
 export https_proxy=http://127.0.0.1:9/
 export no_proxy=localhost,127.0.0.1,0.0.0.0
 export LANG=C
-export SOURCE_DATE_EPOCH=1514732068
+export SOURCE_DATE_EPOCH=1524580519
 export CFLAGS="$CFLAGS -O3 -falign-functions=32 -fno-math-errno -fno-semantic-interposition -fno-trapping-math "
 export FCFLAGS="$CFLAGS -O3 -falign-functions=32 -fno-math-errno -fno-semantic-interposition -fno-trapping-math "
 export FFLAGS="$CFLAGS -O3 -falign-functions=32 -fno-math-errno -fno-semantic-interposition -fno-trapping-math "
@@ -83,13 +80,15 @@ export CXXFLAGS="$CXXFLAGS -O3 -falign-functions=32 -fno-math-errno -fno-semanti
 %configure --disable-static
 make  %{?_smp_mflags}
 
+unset PKG_CONFIG_PATH
 pushd ../buildavx2/
 export CFLAGS="$CFLAGS -m64 -march=haswell"
 export CXXFLAGS="$CXXFLAGS -m64 -march=haswell"
 export LDFLAGS="$LDFLAGS -m64 -march=haswell"
-%configure --disable-static    --libdir=/usr/lib64/haswell --bindir=/usr/bin/haswell
+%configure --disable-static    --libdir=/usr/lib64/haswell
 make  %{?_smp_mflags}
 popd
+unset PKG_CONFIG_PATH
 pushd ../buildavx512/
 export CFLAGS="$CFLAGS -m64 -march=skylake-avx512"
 export CXXFLAGS="$CXXFLAGS -m64 -march=skylake-avx512"
@@ -105,7 +104,7 @@ export no_proxy=localhost,127.0.0.1,0.0.0.0
 make VERBOSE=1 V=1 %{?_smp_mflags} check
 
 %install
-export SOURCE_DATE_EPOCH=1514732068
+export SOURCE_DATE_EPOCH=1524580519
 rm -rf %{buildroot}
 pushd ../buildavx2/
 %make_install
@@ -117,16 +116,20 @@ popd
 
 %files
 %defattr(-,root,root,-)
-/usr/lib64/haswell/avx512_1/pkgconfig/samplerate.pc
-/usr/lib64/haswell/pkgconfig/samplerate.pc
 
 %files bin
 %defattr(-,root,root,-)
 /usr/bin/haswell/avx512_1/sndfile-resample
-/usr/bin/haswell/sndfile-resample
 /usr/bin/sndfile-resample
 
-%files data
+%files dev
+%defattr(-,root,root,-)
+/usr/include/*.h
+/usr/lib64/haswell/libsamplerate.so
+/usr/lib64/libsamplerate.so
+/usr/lib64/pkgconfig/samplerate.pc
+
+%files doc
 %defattr(-,root,root,-)
 /usr/share/doc/libsamplerate0-dev/html/SRC.css
 /usr/share/doc/libsamplerate0-dev/html/SRC.png
@@ -143,13 +146,6 @@ popd
 /usr/share/doc/libsamplerate0-dev/html/lists.html
 /usr/share/doc/libsamplerate0-dev/html/quality.html
 /usr/share/doc/libsamplerate0-dev/html/win32.html
-
-%files dev
-%defattr(-,root,root,-)
-/usr/include/*.h
-/usr/lib64/haswell/libsamplerate.so
-/usr/lib64/libsamplerate.so
-/usr/lib64/pkgconfig/samplerate.pc
 
 %files lib
 %defattr(-,root,root,-)
