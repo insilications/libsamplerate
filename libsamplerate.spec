@@ -4,15 +4,15 @@
 #
 Name     : libsamplerate
 Version  : 0.1.9
-Release  : 12
+Release  : 13
 URL      : http://www.mega-nerd.com/SRC/libsamplerate-0.1.9.tar.gz
 Source0  : http://www.mega-nerd.com/SRC/libsamplerate-0.1.9.tar.gz
 Summary  : An audio Sample Rate Conversion library
 Group    : Development/Tools
 License  : BSD-2-Clause
-Requires: libsamplerate-bin
-Requires: libsamplerate-lib
-Requires: libsamplerate-doc
+Requires: libsamplerate-bin = %{version}-%{release}
+Requires: libsamplerate-lib = %{version}-%{release}
+Requires: libsamplerate-license = %{version}-%{release}
 BuildRequires : alsa-lib-dev
 BuildRequires : pkgconfig(fftw3)
 BuildRequires : pkgconfig(sndfile)
@@ -26,6 +26,7 @@ perfroming sample rate conversion of audio data.
 %package bin
 Summary: bin components for the libsamplerate package.
 Group: Binaries
+Requires: libsamplerate-license = %{version}-%{release}
 
 %description bin
 bin components for the libsamplerate package.
@@ -34,9 +35,9 @@ bin components for the libsamplerate package.
 %package dev
 Summary: dev components for the libsamplerate package.
 Group: Development
-Requires: libsamplerate-lib
-Requires: libsamplerate-bin
-Provides: libsamplerate-devel
+Requires: libsamplerate-lib = %{version}-%{release}
+Requires: libsamplerate-bin = %{version}-%{release}
+Provides: libsamplerate-devel = %{version}-%{release}
 
 %description dev
 dev components for the libsamplerate package.
@@ -53,9 +54,18 @@ doc components for the libsamplerate package.
 %package lib
 Summary: lib components for the libsamplerate package.
 Group: Libraries
+Requires: libsamplerate-license = %{version}-%{release}
 
 %description lib
 lib components for the libsamplerate package.
+
+
+%package license
+Summary: license components for the libsamplerate package.
+Group: Default
+
+%description license
+license components for the libsamplerate package.
 
 
 %prep
@@ -72,7 +82,7 @@ export http_proxy=http://127.0.0.1:9/
 export https_proxy=http://127.0.0.1:9/
 export no_proxy=localhost,127.0.0.1,0.0.0.0
 export LANG=C
-export SOURCE_DATE_EPOCH=1524580519
+export SOURCE_DATE_EPOCH=1541615712
 export CFLAGS="$CFLAGS -O3 -falign-functions=32 -fno-math-errno -fno-semantic-interposition -fno-trapping-math "
 export FCFLAGS="$CFLAGS -O3 -falign-functions=32 -fno-math-errno -fno-semantic-interposition -fno-trapping-math "
 export FFLAGS="$CFLAGS -O3 -falign-functions=32 -fno-math-errno -fno-semantic-interposition -fno-trapping-math "
@@ -85,15 +95,15 @@ pushd ../buildavx2/
 export CFLAGS="$CFLAGS -m64 -march=haswell"
 export CXXFLAGS="$CXXFLAGS -m64 -march=haswell"
 export LDFLAGS="$LDFLAGS -m64 -march=haswell"
-%configure --disable-static    --libdir=/usr/lib64/haswell
+%configure --disable-static
 make  %{?_smp_mflags}
 popd
 unset PKG_CONFIG_PATH
 pushd ../buildavx512/
-export CFLAGS="$CFLAGS -m64 -march=skylake-avx512"
-export CXXFLAGS="$CXXFLAGS -m64 -march=skylake-avx512"
+export CFLAGS="$CFLAGS -m64 -march=skylake-avx512 -mprefer-vector-width=512"
+export CXXFLAGS="$CXXFLAGS -m64 -march=skylake-avx512 -mprefer-vector-width=512"
 export LDFLAGS="$LDFLAGS -m64 -march=skylake-avx512"
-%configure --disable-static    --libdir=/usr/lib64/haswell/avx512_1 --bindir=/usr/bin/haswell/avx512_1
+%configure --disable-static
 make  %{?_smp_mflags}
 popd
 %check
@@ -102,15 +112,22 @@ export http_proxy=http://127.0.0.1:9/
 export https_proxy=http://127.0.0.1:9/
 export no_proxy=localhost,127.0.0.1,0.0.0.0
 make VERBOSE=1 V=1 %{?_smp_mflags} check
+cd ../buildavx2;
+make VERBOSE=1 V=1 %{?_smp_mflags} check || :
+cd ../buildavx512;
+make VERBOSE=1 V=1 %{?_smp_mflags} check || :
 
 %install
-export SOURCE_DATE_EPOCH=1524580519
+export SOURCE_DATE_EPOCH=1541615712
 rm -rf %{buildroot}
-pushd ../buildavx2/
-%make_install
-popd
+mkdir -p %{buildroot}/usr/share/package-licenses/libsamplerate
+cp COPYING %{buildroot}/usr/share/package-licenses/libsamplerate/COPYING
+cp doc/license.html %{buildroot}/usr/share/package-licenses/libsamplerate/doc_license.html
 pushd ../buildavx512/
-%make_install
+%make_install_avx512
+popd
+pushd ../buildavx2/
+%make_install_avx2
 popd
 %make_install
 
@@ -120,17 +137,19 @@ popd
 %files bin
 %defattr(-,root,root,-)
 /usr/bin/haswell/avx512_1/sndfile-resample
+/usr/bin/haswell/sndfile-resample
 /usr/bin/sndfile-resample
 
 %files dev
 %defattr(-,root,root,-)
 /usr/include/*.h
+/usr/lib64/haswell/avx512_1/libsamplerate.so
 /usr/lib64/haswell/libsamplerate.so
 /usr/lib64/libsamplerate.so
 /usr/lib64/pkgconfig/samplerate.pc
 
 %files doc
-%defattr(-,root,root,-)
+%defattr(0644,root,root,0755)
 /usr/share/doc/libsamplerate0-dev/html/SRC.css
 /usr/share/doc/libsamplerate0-dev/html/SRC.png
 /usr/share/doc/libsamplerate0-dev/html/api.html
@@ -149,10 +168,14 @@ popd
 
 %files lib
 %defattr(-,root,root,-)
-/usr/lib64/haswell/avx512_1/libsamplerate.so
 /usr/lib64/haswell/avx512_1/libsamplerate.so.0
 /usr/lib64/haswell/avx512_1/libsamplerate.so.0.1.8
 /usr/lib64/haswell/libsamplerate.so.0
 /usr/lib64/haswell/libsamplerate.so.0.1.8
 /usr/lib64/libsamplerate.so.0
 /usr/lib64/libsamplerate.so.0.1.8
+
+%files license
+%defattr(0644,root,root,0755)
+/usr/share/package-licenses/libsamplerate/COPYING
+/usr/share/package-licenses/libsamplerate/doc_license.html
