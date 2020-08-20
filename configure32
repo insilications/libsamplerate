@@ -1,1 +1,1 @@
---disable-fftw
+--enable-shared --enable-static --disable-fftw

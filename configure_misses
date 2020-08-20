@@ -1,8 +1,12 @@
+Configure miss: whether configure should try to set CFLAGS/CPPFLAGS/LDFLAGS
 Configure miss: windres
 Configure miss: processor clipping capabilities
+Configure miss: whether C compiler accepts -Wshorten-64-to-32
+Configure miss: whether configure should try to set CFLAGS/CPPFLAGS/LDFLAGS
+Configure miss: windres
+Configure miss: processor clipping capabilities
+Configure miss: whether C compiler accepts -Wshorten-64-to-32
+Configure miss: whether configure should try to set CFLAGS/CPPFLAGS/LDFLAGS
 Configure miss: i686-generic-linux-gnu-windres
 Configure miss: windres
-Configure miss: windres
-Configure miss: processor clipping capabilities
-Configure miss: windres
-Configure miss: processor clipping capabilities
+Configure miss: whether C compiler accepts -Wshorten-64-to-32
