@@ -5,7 +5,7 @@
 %define keepstatic 1
 Name     : libsamplerate
 Version  : 20.07.05
-Release  : 18
+Release  : 19
 URL      : file:///insilications/build/clearlinux/packages/libsamplerate/libsamplerate-20.07.05.zip
 Source0  : file:///insilications/build/clearlinux/packages/libsamplerate/libsamplerate-20.07.05.zip
 Summary  : An audio Sample Rate Conversion library
@@ -111,7 +111,7 @@ unset http_proxy
 unset https_proxy
 unset no_proxy
 export LANG=C.UTF-8
-export SOURCE_DATE_EPOCH=1597916468
+export SOURCE_DATE_EPOCH=1597922080
 export GCC_IGNORE_WERROR=1
 export AR=gcc-ar
 export RANLIB=gcc-ranlib
@@ -182,7 +182,7 @@ cd ../build32;
 make %{?_smp_mflags} check || : || :
 
 %install
-export SOURCE_DATE_EPOCH=1597916468
+export SOURCE_DATE_EPOCH=1597922080
 rm -rf %{buildroot}
 pushd ../build32/
 %make_install32
