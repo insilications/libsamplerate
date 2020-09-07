@@ -12,3 +12,5 @@ pkg-config
 findutils
 sed
 util-linux
+fftw-dev
+fftw-staticdev
