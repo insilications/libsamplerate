@@ -6,8 +6,8 @@
 Name     : libsamplerate
 Version  : 0.2.1
 Release  : 22
-URL      : file:///aot/build/clearlinux/packages/libsamplerate/libsamplerate-0.2.1.tar.gz
-Source0  : file:///aot/build/clearlinux/packages/libsamplerate/libsamplerate-0.2.1.tar.gz
+URL      : file:///aot/build/clearlinux/packages/libsamplerate/libsamplerate-v0.2.1.tar.gz
+Source0  : file:///aot/build/clearlinux/packages/libsamplerate/libsamplerate-v0.2.1.tar.gz
 Summary  : An audio Sample Rate Conversion library
 Group    : Development/Tools
 License  : zlib-acknowledgement
@@ -126,7 +126,7 @@ unset https_proxy
 unset no_proxy
 export SSL_CERT_FILE=/var/cache/ca-certs/anchors/ca-certificates.crt
 export LANG=C.UTF-8
-export SOURCE_DATE_EPOCH=1620558616
+export SOURCE_DATE_EPOCH=1622280880
 export GCC_IGNORE_WERROR=1
 export AR=gcc-ar
 export RANLIB=gcc-ranlib
@@ -173,23 +173,32 @@ export CCACHE_BASEDIR=/builddir/build/BUILD
 #export CCACHE_DEBUG=true
 #export CCACHE_NODIRECT=true
 ## altflags_pgo end
+sd -r '\s--dirty\s' ' ' .
+sd -r 'git describe' 'git describe --abbrev=0' .
+if [ ! -f statuspgo ]; then
+echo PGO Phase 1
 export CFLAGS="${CFLAGS_GENERATE}"
 export CXXFLAGS="${CXXFLAGS_GENERATE}"
 export FFLAGS="${FFLAGS_GENERATE}"
 export FCFLAGS="${FCFLAGS_GENERATE}"
 export LDFLAGS="${LDFLAGS_GENERATE}"
 %autogen  --enable-shared --enable-static
-make  %{?_smp_mflags}
+make  %{?_smp_mflags}    V=1 VERBOSE=1
 
 make VERBOSE=1 V=1 %{?_smp_mflags} check || :
 make clean
+echo USED > statuspgo
+fi
+if [ -f statuspgo ]; then
+echo PGO Phase 2
 export CFLAGS="${CFLAGS_USE}"
 export CXXFLAGS="${CXXFLAGS_USE}"
 export FFLAGS="${FFLAGS_USE}"
 export FCFLAGS="${FCFLAGS_USE}"
 export LDFLAGS="${LDFLAGS_USE}"
 %autogen  --enable-shared --enable-static
-make  %{?_smp_mflags}
+make  %{?_smp_mflags}    V=1 VERBOSE=1
+fi
 
 pushd ../build32/
 export CFLAGS="-O2 -ffat-lto-objects -fuse-linker-plugin -pipe -fPIC -m32 -mstackrealign -march=native -mtune=native"
@@ -205,11 +214,11 @@ export CFLAGS="${CFLAGS}${CFLAGS:+ }-m32 -mstackrealign"
 export CXXFLAGS="${CXXFLAGS}${CXXFLAGS:+ }-m32 -mstackrealign"
 export LDFLAGS="${LDFLAGS}${LDFLAGS:+ }-m32 -mstackrealign"
 %autogen  --enable-shared --enable-static --disable-fftw --libdir=/usr/lib32 --build=i686-generic-linux-gnu --host=i686-generic-linux-gnu --target=i686-clr-linux-gnu
-make  %{?_smp_mflags}
+make  %{?_smp_mflags}    V=1 VERBOSE=1
 popd
 
 %install
-export SOURCE_DATE_EPOCH=1620558616
+export SOURCE_DATE_EPOCH=1622280880
 rm -rf %{buildroot}
 pushd ../build32/
 %make_install32
@@ -221,6 +230,10 @@ then
 fi
 popd
 %make_install
+## install_append content
+install -dm 0755 %{buildroot}/usr/lib64/haswell/ || :
+cp --archive %{buildroot}/usr/lib64/lib*.so* %{buildroot}/usr/lib64/haswell/ || :
+## install_append end
 
 %files
 %defattr(-,root,root,-)
@@ -228,6 +241,7 @@ popd
 %files dev
 %defattr(-,root,root,-)
 /usr/include/samplerate.h
+/usr/lib64/haswell/libsamplerate.so
 /usr/lib64/libsamplerate.so
 /usr/lib64/pkgconfig/samplerate.pc
 
@@ -243,6 +257,8 @@ popd
 
 %files lib
 %defattr(-,root,root,-)
+/usr/lib64/haswell/libsamplerate.so.0
+/usr/lib64/haswell/libsamplerate.so.0.2.1
 /usr/lib64/libsamplerate.so.0
 /usr/lib64/libsamplerate.so.0.2.1
 
